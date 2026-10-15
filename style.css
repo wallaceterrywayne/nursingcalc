@@ -1,24 +1,25 @@
 /* Shared styles for the app (index.html) and the content preview (preview.html). */
+/* ===== Palette (per project). Nursing: green. Everything below the palette is shared design. ===== */
 :root {
-  --bg: #faf8f5; --panel: #ffffff; --ink: #22201d; --muted: #6b6660; --line: #e4dfd8;
-  --accent: #7a2e1f; --accent-soft: #f6ebe7; --ok: #2f6b3a; --ok-soft: #e8f2ea;
-  --bad: #9a2a2a; --bad-soft: #f8e6e6; --check: #3c5a8a; --check-soft: #e9eef7;
-  --liquid: #4a7fb5; --drug-stroke: none;
+  --bg: #eef0ec; --panel: #fafbf8; --ink: #1d2320; --muted: #5d6762; --line: #d3d8d2;
+  --accent: #2f6b57; --accent-soft: #e2ebe5; --ok: #2a7a3d; --ok-soft: #e3f0e5;
+  --bad: #a33b2b; --bad-soft: #f6e5e1; --check: #3d5a73; --check-soft: #e5ebf0;
+  --liquid: #4a7fb5; --drug-stroke: none; --on-accent: #ffffff;
 }
 /* Dark palette: follows the system setting, and an explicit data-theme on the root wins both ways. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #1b1a18; --panel: #24221f; --ink: #ece8e2; --muted: #a39d95; --line: #3a3733;
-    --accent: #e58a72; --accent-soft: #3a2822; --ok: #8fcf9a; --ok-soft: #22312a;
-    --bad: #f08c8c; --bad-soft: #3a2324; --check: #9db8e6; --check-soft: #232c3b;
-    --liquid: #6fa3d9; --drug-stroke: var(--muted); color-scheme: dark;
+    --bg: #161a18; --panel: #202623; --ink: #e6ebe7; --muted: #9aa49f; --line: #343c38;
+    --accent: #7cc2a6; --accent-soft: #28332e; --ok: #8fcf9a; --ok-soft: #22312a;
+    --bad: #f08a78; --bad-soft: #3a2522; --check: #9db8d6; --check-soft: #232c35;
+    --liquid: #6fa3d9; --drug-stroke: var(--muted); --on-accent: #0f1f19; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-    --bg: #1b1a18; --panel: #24221f; --ink: #ece8e2; --muted: #a39d95; --line: #3a3733;
-    --accent: #e58a72; --accent-soft: #3a2822; --ok: #8fcf9a; --ok-soft: #22312a;
-    --bad: #f08c8c; --bad-soft: #3a2324; --check: #9db8e6; --check-soft: #232c3b;
-    --liquid: #6fa3d9; --drug-stroke: var(--muted); color-scheme: dark;
+    --bg: #161a18; --panel: #202623; --ink: #e6ebe7; --muted: #9aa49f; --line: #343c38;
+    --accent: #7cc2a6; --accent-soft: #28332e; --ok: #8fcf9a; --ok-soft: #22312a;
+    --bad: #f08a78; --bad-soft: #3a2522; --check: #9db8d6; --check-soft: #232c35;
+    --liquid: #6fa3d9; --drug-stroke: var(--muted); --on-accent: #0f1f19; color-scheme: dark;
 }
 .d-drug { stroke: var(--drug-stroke); stroke-width: 1; }
 * { box-sizing: border-box; }
@@ -147,14 +148,75 @@ label[for=catchUp] .muted { display: block; font-weight: 400; }
 details.quiet > summary { cursor: pointer; color: var(--muted); font-size: .95rem; }
 details.quiet[open] > summary { margin-bottom: 8px; }
 
-/* Order card and drug label shown with a problem */
+/* Order card and drug label shown with a problem: stacked, so the label gets the full width */
 .stem:empty { display: none; }
-.given { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; margin: 0 0 16px; }
-.order-card { flex: 1 1 220px; min-width: 0; border: 1px solid var(--line, #d0d4d8); border-left: 4px solid var(--accent, #2f6b57);
+.given { display: flex; flex-direction: column; gap: 12px; margin: 0 0 16px; }
+.order-card { border: 1px solid var(--line); border-left: 4px solid var(--accent);
   border-radius: 4px; padding: 10px 14px; font-size: 16px; }
-.order-card b { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+.order-card b { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .order-card div + b { margin-top: 6px; }
-.label-wrap { flex: 1 1 340px; min-width: 0; background: #f2f2ee; border-radius: 6px; padding: 10px; display: flex; justify-content: center; }
+.label-wrap { position: relative; display: flex; justify-content: center; width: 100%; background: #f2f2ee; border: 0;
+  border-radius: 6px; padding: 10px; cursor: zoom-in; font: inherit; }
+.label-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .label-wrap svg.druglabel { max-width: 100%; height: auto; display: block; }
+.zoom-hint { position: absolute; right: 8px; bottom: 6px; font-size: 12px; color: #444; background: rgba(255,255,255,.85);
+  padding: 2px 8px; border-radius: 10px; }
+.label-zoom { position: fixed; inset: 0; z-index: 50; background: rgba(20,20,20,.88); display: flex; align-items: center;
+  justify-content: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+  max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); cursor: zoom-out; overflow: auto; }
+.label-zoom svg { width: min(96vw, 1400px); max-height: 92vh; height: auto; background: #fff; border-radius: 6px; }
+.zoom-close { position: fixed; top: max(12px, env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px));
+  font: 600 14px inherit; background: #fff; color: #111; border: 0; border-radius: 4px; padding: 8px 14px; cursor: pointer; }
 .question { font-size: 18px; font-weight: 600; margin: 0 0 16px; }
-.blk-section .sec-head strong:first-child { letter-spacing: .02em; }
+
+/* ===================================================================================
+   Design layer v1. Shared by every project (pharmacy, nursing, ...): copy this block
+   unchanged. Only the palette at the top of this file differs between projects.
+   Fonts: Archivo (text) and IBM Plex Mono (IDs), linked in each page's <head>; without
+   internet the page falls back to Arial / the system monospace font.
+   =================================================================================== */
+:root { --f-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+        --f-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        --radius: 6px; --radius-sm: 4px; }
+body { font: 16px/1.55 var(--f-body); }
+
+/* Headings: heavy, tight, in ink; small labels: uppercase, letter-spaced, muted */
+h1, h2, .app-head h1, header h1 { font-family: var(--f-body); font-weight: 800; letter-spacing: -.01em; color: var(--ink); }
+.app-head h1 { font-size: 22px; }
+header h1 { font-size: 19px; }
+h2 { font-size: 20px; }
+nav h3, h3.collection, .order-card b, .problem-meta { font-weight: 600; font-size: 12px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted); }
+.pid, .problem-meta .pid, pre { font-family: var(--f-mono); letter-spacing: 0; text-transform: none; }
+
+/* Surfaces: one border, a small radius, no shadow */
+.card { border-radius: var(--radius); }
+.feedback, .notice, .blk-callout, pre { border-radius: var(--radius-sm); }
+.notice { border-left-width: 3px; }
+.blk-callout { border-left-width: 3px; }
+
+/* Controls */
+button.btn { border-radius: var(--radius-sm); font-weight: 600; font-size: 14px; padding: 9px 16px; color: var(--on-accent, #fff); }
+button.btn.ghost { border-color: var(--line); background: transparent; color: var(--accent); }
+button.btn.ghost:hover:not(:disabled) { border-color: var(--accent); }
+button.btn:focus-visible, .linkbtn:focus-visible, nav button:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type=text], select { border-radius: var(--radius-sm); background-color: var(--panel); }
+input[type=text]:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+.linkbtn { font-weight: 600; font-size: 14px; }
+nav button { border-radius: var(--radius-sm); }
+.badge { border-radius: var(--radius-sm); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
+.today-count { font-weight: 800; font-variant-numeric: tabular-nums; }
+.progress { height: 6px; }
+.status-table td, .blk-table td { font-variant-numeric: tabular-nums; }
+
+/* Worked solutions: steps separated by rules; each step's name as a small uppercase accent label */
+.blk-section { margin: 0; padding: 12px 0; }
+.blk-section + .blk-section { border-top: 1px solid var(--line); }
+.blk-section .sec-head { font-size: 15px; }
+.blk-section .sec-head strong:first-child { font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--accent); margin-right: 2px; }
+.sec-body { margin-left: 0; padding-left: 0; border-left: 0; }
+#solution > .blk-text:last-child { margin-top: 14px; }
+#solution > .blk-text:last-child strong { display: inline-block; background: var(--accent-soft); color: var(--ink);
+  padding: 5px 12px; border-radius: var(--radius-sm); }

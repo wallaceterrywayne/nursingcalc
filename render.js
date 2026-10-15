@@ -98,12 +98,34 @@
     if (p.order || p.label) {
       h += '<div class="given">';
       if (p.order) h += '<div class="order-card">' + p.order.map(([k, v]) => `<b>${esc(k)}</b><div>${esc(v)}</div>`).join("") + "</div>";
-      if (p.label && window.Labels) h += `<div class="label-wrap">${window.Labels.draw(p.label)}</div>`;
+      if (p.label && window.Labels) h += `<button type="button" class="label-wrap" aria-label="Enlarge the drug label">${window.Labels.draw(p.label)}<span class="zoom-hint">Click to enlarge</span></button>`;
       h += "</div>";
     }
     if (p.question) h += `<p class="question">${esc(p.question)}</p>`;
     return h;
   }
+
+  // Click a label to see it enlarged; click anywhere or press Escape to close.
+  function openZoom(svg) {
+    const ov = el("div", "label-zoom");
+    ov.setAttribute("role", "dialog");
+    ov.setAttribute("aria-label", "Enlarged drug label");
+    const big = svg.cloneNode(true);
+    big.removeAttribute("width");
+    ov.appendChild(big);
+    ov.appendChild(el("button", "zoom-close", "Close"));
+    const close = () => { ov.remove(); document.removeEventListener("keydown", onKey); last && last.focus(); };
+    const onKey = (e) => { if (e.key === "Escape") close(); };
+    const last = document.activeElement;
+    ov.addEventListener("click", close);
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(ov);
+    ov.querySelector(".zoom-close").focus();
+  }
+  document.addEventListener("click", (e) => {
+    const w = e.target.closest && e.target.closest(".label-wrap");
+    if (w) openZoom(w.querySelector("svg"));
+  });
 
   window.Render = { resolve, renderBlocks, md, esc, problemHTML };
 })();
