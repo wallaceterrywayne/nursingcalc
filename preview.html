@@ -3,138 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Problem Preview</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="vendor/katex/katex.min.css">
-<script src="vendor/katex/katex.min.js"></script>
-<link rel="stylesheet" href="style.css">
+<title>Nursing Dosage Calculations has moved</title>
+<meta http-equiv="refresh" content="0; url=https://wallaceterrywayne.github.io/practicecalcs/nursing/preview.html">
+<link rel="canonical" href="https://wallaceterrywayne.github.io/practicecalcs/nursing/preview.html">
+<script>location.replace("https://wallaceterrywayne.github.io/practicecalcs/nursing/preview.html");</script>
+<style>body{font:17px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;max-width:560px;margin:56px auto;padding:0 20px;color:#1d2320;background:#f4f5f2}a{color:#2f6b57}</style>
 </head>
 <body>
-<header>
-  <h1>Problem preview</h1>
-  <span class="count" id="count"></span>
-  <button class="btn ghost" id="random">Random problem</button>
-  <span class="count">Open a specific ID: </span>
-  <input type="text" id="idbox" placeholder="TAB.T1.tablets-label.v1.1001" style="width:280px">
-</header>
-<div class="layout">
-  <nav id="nav"></nav>
-  <main>
-    <div class="card" id="problem"></div>
-    <div class="card" id="solution"></div>
-  </main>
-</div>
-
-<script src="loader.js"></script>
-<script src="diagrams.js"></script>
-<script src="labels.js"></script>
-<script src="render.js"></script>
-<script>
-PC.loadMeta().then(() => PC.loadTopics(PC.meta.topics.map((t) => t.id))).then(() => {
-  const pool = Object.values(PC.pool).flat();
-  const byId = new Map(pool.map((p) => [p.id, p]));
-  const REPORT_EMAIL = ""; // set to receive "Report a problem" emails
-  let current = null;
-
-  document.getElementById("count").textContent = `${pool.length} instances`;
-
-  // Sidebar: topic → card → variant.
-  const nav = document.getElementById("nav");
-  for (const t of PC.meta.topics) {
-    for (const c of t.cards.filter((c) => c.count)) {
-      nav.insertAdjacentHTML("beforeend", `<h3>${Render.esc(t.name)} · ${Render.esc(c.name)}</h3>`);
-      const variants = [...new Set(pool.filter((p) => p.card === c.id).map((p) => p.variant))];
-      for (const v of variants) {
-        const n = pool.filter((p) => p.variant === v).length;
-        const b = document.createElement("button");
-        b.dataset.variant = v;
-        b.innerHTML = `${Render.esc(v)} <span class="vmeta">(${n})</span>`;
-        b.onclick = () => {
-          const opts = pool.filter((p) => p.variant === v);
-          show(opts[Math.floor(Math.random() * opts.length)]);
-        };
-        nav.appendChild(b);
-      }
-    }
-  }
-
-  function parseNum(s) {
-    const ratio = String(s).replace(/,/g, "").match(/^\s*1\s*:\s*(\d*\.?\d+)/);   // "1:2500" → 2500
-    if (ratio) return parseFloat(ratio[1]);
-    const m = String(s).replace(/,/g, "").match(/-?\d*\.?\d+/);
-    return m ? parseFloat(m[0]) : NaN;
-  }
-
-  function show(p) {
-    current = p;
-    history.replaceState(null, "", "#" + p.id);
-    document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("active", b.dataset.variant === p.variant));
-    const unit = p.answer.unit;
-    const mail = `mailto:${REPORT_EMAIL}?subject=${encodeURIComponent("Problem report: " + p.id)}` +
-                 `&body=${encodeURIComponent("Problem ID: " + p.id + "\nMy answer: \nWhat seems wrong: \n")}`;
-    document.getElementById("problem").innerHTML = `
-      <div class="pid"><span>${p.id}</span><a href="${mail}">Report a problem</a></div>
-      ${Render.problemHTML(p)}
-      <div class="answer-row">
-        ${p.answer.choices ? p.answer.choices.map((c, i) => `<button class="btn ghost choice" data-choice="${i}">${Render.esc(c)}</button>`).join("") : unit === "1:x"
-          ? '<span class="unit">1&nbsp;:</span><input type="text" id="ans" inputmode="decimal" placeholder="x" autocomplete="off">'
-          : `<input type="text" id="ans" inputmode="decimal" placeholder="Your answer" autocomplete="off"><span class="unit">${Render.esc(unit)}</span>`}
-        <button class="btn" id="check">Check</button>
-      </div>
-      <div class="feedback" id="fb"></div>
-      <div class="tools">
-        <button class="btn ghost" id="toggle">Show worked solution</button>
-        <button class="btn ghost" id="again">Another like this</button>
-      </div>
-`;
-    const sol = document.getElementById("solution");
-    sol.classList.remove("open");
-    Render.renderBlocks(p.solution, sol);
-
-    const fb = document.getElementById("fb");
-    const input = document.getElementById("ans");
-    const check = () => {
-      const v = parseNum(input.value);
-      if (Number.isNaN(v)) { fb.className = "feedback bad"; fb.textContent = "Enter a number first."; return; }
-      // Exact match to the stated rounding (3.10 and 3.1 are the same number).
-      const ok = Math.abs(v - p.answer.value) < 1e-9;
-      fb.className = "feedback " + (ok ? "ok" : "bad");
-      fb.textContent = ok ? `Correct: ${p.answer.display}` : "Not quite. Check your setup, or open the worked solution.";
-    };
-    if (p.answer.choices) {
-      document.getElementById("check").style.display = "none";
-      document.querySelectorAll("[data-choice]").forEach((b) => (b.onclick = () => {
-        const ok = +b.dataset.choice === p.answer.value;
-        fb.className = "feedback " + (ok ? "ok" : "bad");
-        fb.textContent = ok ? `Correct: ${p.answer.display}` : "Not quite. Check your setup, or open the worked solution.";
-      }));
-    } else {
-      document.getElementById("check").onclick = check;
-      input.addEventListener("keydown", (e) => { if (e.key === "Enter") check(); });
-      input.addEventListener("input", () => { fb.className = "feedback"; });
-    }
-    document.getElementById("toggle").onclick = (e) => {
-      sol.classList.toggle("open");
-      e.target.textContent = sol.classList.contains("open") ? "Hide worked solution" : "Show worked solution";
-    };
-    document.getElementById("again").onclick = () => {
-      const opts = pool.filter((q) => q.variant === p.variant && q.id !== p.id);
-      show(opts[Math.floor(Math.random() * opts.length)]);
-    };
-  }
-
-  const random = () => show(pool[Math.floor(Math.random() * pool.length)]);
-  document.getElementById("random").onclick = random;
-  document.getElementById("idbox").addEventListener("keydown", (e) => {
-    if (e.key !== "Enter") return;
-    const p = byId.get(e.target.value.trim());
-    if (p) show(p); else alert("That ID is not in the current pool.");
-  });
-
-  const start = byId.get(decodeURIComponent(location.hash.slice(1)));
-  start ? show(start) : random();
-});
-</script>
+<h1>Nursing Dosage Calculations has moved</h1>
+<p>The app is now at <a href="https://wallaceterrywayne.github.io/practicecalcs/nursing/preview.html">https://wallaceterrywayne.github.io/practicecalcs/nursing/preview.html</a>. If you aren't taken there automatically, follow that link, and update any bookmark.</p>
 </body>
 </html>
